@@ -4,7 +4,12 @@
 
 ### Overview
 
-This is a ROS Package that defines a basic publisher and subscriber with custom message.
+This is a ROS Package that defines the following:
+- Basic publisher and subscriber with custom message.
+- Use of all five logger levels: ```Fatal, Error, Warn, Info and Debug.```
+- Custom service to change base output string.
+
+
 
 ### Dependencies/ Assumptions
 - OS : Ubuntu 20.04 
