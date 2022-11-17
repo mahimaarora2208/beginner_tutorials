@@ -43,17 +43,18 @@
  *  message and facilitate change in message content upon a request
  *
  */
+#include <signal.h>
+
 #include <chrono>
 #include <exception>
 #include <functional>
 #include <memory>
-#include <string>
-#include <signal.h>
-
-#include "rclcpp/rclcpp.hpp"
 #include <rclcpp/logging.hpp>
+#include <string>
+
+#include "beginner_tutorials/srv/change_string.hpp"
+#include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
-#include "beginner_tutorials/srv/change_string.hpp"    
 
 using namespace std::chrono_literals;
 
@@ -62,15 +63,24 @@ using namespace std::chrono_literals;
 
 class MinimalPublisher : public rclcpp::Node {
  public:
-  std::string defaultMessage = "Welcome to ROS2 Publisher-Subscriber package!"; // Default output message
+  std::string defaultMessage =
+      "Welcome to ROS2 Publisher-Subscriber package!";  // Default output
+                                                        // message
   MinimalPublisher() : Node("minimal_publisher"), count_(0) {
     publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
     timer_ = this->create_wall_timer(
         500ms, std::bind(&MinimalPublisher::timer_callback, this));
-    
-    auto serviceCallbackPtr = std::bind (&MinimalPublisher::changeRequestString, this, std::placeholders::_1, std::placeholders::_2);
-    service_ = create_service <beginner_tutorials::srv::ChangeString> ("update_request",serviceCallbackPtr);
 
+    auto serviceCallbackPtr =
+        std::bind(&MinimalPublisher::changeRequestString, this,
+                  std::placeholders::_1, std::placeholders::_2);
+    service_ = create_service<beginner_tutorials::srv::ChangeString>(
+        "update_request", serviceCallbackPtr);
+   
+   if (this->count_subscribers("topic") == 0) {
+    RCLCPP_WARN_STREAM(this->get_logger(), "No subscriber for this topic");
+  }
+  this->get_logger().set_level(rclcpp::Logger::Level::Debug);
   }
 
  private:
@@ -80,37 +90,40 @@ class MinimalPublisher : public rclcpp::Node {
     RCLCPP_INFO_STREAM(this->get_logger(), "Publishing:" << message.data);
     publisher_->publish(message);
   }
-  
-  void changeRequestString(const std::shared_ptr<beginner_tutorials::srv::ChangeString::Request>request,     
-            std::shared_ptr<beginner_tutorials::srv::ChangeString::Response>response) 
-  {      
+
+  void changeRequestString(
+      const std::shared_ptr<beginner_tutorials::srv::ChangeString::Request>
+          request,
+      std::shared_ptr<beginner_tutorials::srv::ChangeString::Response>
+          response) {
     response->output = request->input;
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "Input Request: " << request->input);                                  
-    RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"), "Response updated: " << response->output);
-    defaultMessage = response->output; //changes default message to what was requested
+    RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),
+                       "Input Request: " << request->input);
+    RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"),
+                       "Response updated: " << response->output);
+    defaultMessage =
+        response->output;  // changes default message to what was requested
   }
 
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
   rclcpp::Service<beginner_tutorials::srv::ChangeString>::SharedPtr service_;
   size_t count_;
-  
 };
 
-void terminate_handler(int stop) {
-    if (stop == 1) {
-        RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),
+void terminate_handler(int signum) {
+  if (signum == 2) {
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),
                         "Process terminated by user!");
-    }
+  }
 }
 int main(int argc, char* argv[]) {
-
-   /**
-   * The rclcpp::init() function needs to see argc and argv so that it can perform
-   * any ROS arguments and name remapping that were provided at the command line.
-   * For programmatic remappings you can use a different version of init() which takes
-   * remappings directly, but for most command-line programs, passing argc and argv is
-   * the easiest way to do it. 
+  /**
+   * The rclcpp::init() function needs to see argc and argv so that it can
+   * perform any ROS arguments and name remapping that were provided at the
+   * command line. For programmatic remappings you can use a different version
+   * of init() which takes remappings directly, but for most command-line
+   * programs, passing argc and argv is the easiest way to do it.
    *
    * You must call one of the versions of rclcpp::init() before using any other
    * part of the ROS2 system.

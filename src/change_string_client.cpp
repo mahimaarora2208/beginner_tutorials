@@ -1,4 +1,5 @@
-/************************************************************************************
+
+/********************************************************************
  * Copyright (c) 2022 Mahima Arora
  * All rights reserved.
  *
@@ -27,49 +28,60 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- ************************************************************************************/
+ ********************************************************************/
 /**
- *  @file    subscriber_member_function.cpp
+ *  @file    change_string_client.cpp
  *  @author  Mahima Arora
- *  @date    11/15/2022
+ *  @date    11/17/2022
  *  @version 1.0
  *
- *  @brief Source file to implement a simple ROS publisher node and a service
- *         server node
- *
- *  @section DESCRIPTION
- *
- *  Source file to implement a simple ROS2 Listener node listening a custom
- *  message and facilitate change in message content upon a request
+ *  @brief Source file to implement a simple ROS2 client node
  *
  */
-#include <functional>
+
+#include <chrono>
+#include <cstdlib>
 #include <memory>
-#include <rclcpp/logging.hpp>
 
 #include "beginner_tutorials/srv/change_string.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/string.hpp"
 
-using std::placeholders::_1;
+using namespace std::chrono_literals;
 
-class MinimalSubscriber : public rclcpp::Node {
- public:
-  MinimalSubscriber() : Node("minimal_subscriber") {
-    subscription_ = this->create_subscription<std_msgs::msg::String>(
-        "topic", 10, std::bind(&MinimalSubscriber::topic_callback, this, _1));
-  }
-
- private:
-  void topic_callback(const std_msgs::msg::String& msg) const {
-    RCLCPP_INFO_STREAM(this->get_logger(), "I heard this:" << msg.data);
-  }
-  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
-};
-
-int main(int argc, char* argv[]) {
+int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<MinimalSubscriber>());
+
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("string_change_client");
+  rclcpp::Client<beginner_tutorials::srv::ChangeString>::SharedPtr client =
+      node->create_client<beginner_tutorials::srv::ChangeString>(
+          "string_change");
+
+  auto request =
+      std::make_shared<beginner_tutorials::srv::ChangeString::Request>();
+  request->input = argv[1];
+
+  while (!client->wait_for_service(1s)) {
+    if (!rclcpp::ok()) {
+      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
+                   "Interrupted while waiting for the service. Exiting.");
+      return 0;
+    }
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
+                "service not available, waiting again...");
+  }
+
+  auto result = client->async_send_request(request);
+  // Wait for the result.
+  if (rclcpp::spin_until_future_complete(node, result) ==
+      rclcpp::FutureReturnCode::SUCCESS) {
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),
+                       "Output String:" << result.get()->output);
+  } else {
+    RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
+                 "Failed to call service string_change");
+  }
+
   rclcpp::shutdown();
   return 0;
 }

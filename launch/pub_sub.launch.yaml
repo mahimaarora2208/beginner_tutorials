@@ -1,41 +1,26 @@
 launch:
 
 # args that can be set from the command line or a default will be used
-- arg:
-    name: "background_r"
-    default: "0"
-- arg:
-    name: "background_g"
-    default: "255"
-- arg:
-    name: "background_b"
-    default: "0"
+
 - arg:
     name: "frequency"
-    default: "10"
-- arg:
-    name: "chatter_ns"
-    default: "my/chatter/ns"
+    default: "1.0"
 
-
-# include another launch file
-- include:
-    file: "$(find-pkg-share beginner_tutorials)/launch/pub_sub.launch.yaml"
-
-# start a turtlesim_node in the turtlesim1 namespace
+# start a talker node 
 - node:
     pkg: "beginner_tutorials"
     exec: "talker"
     name: "sim"
-    namespace: "pub_talker"
-
-# start another turtlesim_node in the turtlesim2 namespace and use args to set parameters
-- node:
-    pkg: "beginner_tutorials"
-    exec: "listener"
-    name: "sim"
-    namespace: "sub_listener"
+    namespace: "minimal_publisher"
     param:
     -
       name: "frequency"
       value: "$(var frequency)"
+
+# start subscriber and use args to set parameters
+- node:
+    pkg: "beginner_tutorials"
+    exec: "listener"
+    name: "sim"
+    namespace: "minimal_subscriber"
+  

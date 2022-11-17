@@ -26,9 +26,13 @@ ament_target_dependencies(talker rclcpp std_msgs beginner_tutorials)
 add_executable(listener src/subscriber_member_function.cpp)
 ament_target_dependencies(listener rclcpp std_msgs beginner_tutorials)
 
+add_executable(client src/change_string_client.cpp)
+ament_target_dependencies(client rclcpp std_msgs beginner_tutorials)
+
 install(TARGETS
   talker
   listener
+  client
   DESTINATION lib/${PROJECT_NAME})
 
 ament_export_dependencies(rosidl_default_runtime)
