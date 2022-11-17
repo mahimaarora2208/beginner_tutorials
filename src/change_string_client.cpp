@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
   // Wait for the result.
   if (rclcpp::spin_until_future_complete(node, result) ==
       rclcpp::FutureReturnCode::SUCCESS) {
-    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),
+    RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp"),
                        "Output String:" << result.get()->output);
   } else {
     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),

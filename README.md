@@ -45,9 +45,37 @@ cd <your_ROS2_ws>
 ros2 run beginner_tutorials listener
 ```
 
+### Update string using service
+Run talker and Listener node by following above steps, Run
+```
+ros2 service call /update_request beginner_tutorials/srv/ChangeString "{input: 'myNewInput'}"
+```
+This will change the string on both nodes to "myNewString".
+
+
+### Launch File
+To launch nodes using launch file and pass parameters using command line:
+```
+cd <ROS2_ws>/
+. install/setup.bash
+ ros2 launch beginner_tutorials pub_sub.launch.yaml frequency:=5.0
+
+```
+
+To check whether the value updated to 5.0,open a new terminal and source it. Run:
+```
+ros2 param list
+ros2 param get /minimal_publisher/sim frequency 
+```
+
 ## Results
 The results after running the following commands are stored in the <your_package>/results folder.
 
+### rqt Console
+```
+ ros2 run rqt_console rqt_console
+
+```
 ### cppcheck
 Run the following command from the root directory of your ROS package
 ```
