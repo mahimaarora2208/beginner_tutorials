@@ -58,10 +58,13 @@ using namespace std::chrono_literals;
 
 class MinimalPublisher : public rclcpp::Node {
  public:
+  std::string defaultMessage = "Welcome to ROS2 Publisher-Subscriber package!"; // Default output message
   MinimalPublisher() : Node("minimal_publisher"), count_(0) {
     publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
     timer_ = this->create_wall_timer(
         500ms, std::bind(&MinimalPublisher::timer_callback, this));
+  
+
   }
 
  private:
@@ -71,9 +74,21 @@ class MinimalPublisher : public rclcpp::Node {
     RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
     publisher_->publish(message);
   }
+
+
+  void changeRequestString(const std::shared_ptr<beginner_tutorials::srv::changeString::Request> request,     
+            std::shared_ptr<beginner_tutorials::srv::changeString::Response>       response) 
+  {      
+    response->output = defaultMessage;
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Incoming request\n Input: %ld",  
+                      request->input);                                  
+    RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Response updated: [%ld]", (long int)response->output);
+  }
+
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
   size_t count_;
+  
 };
 
 int main(int argc, char* argv[]) {
