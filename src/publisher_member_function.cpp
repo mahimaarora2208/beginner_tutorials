@@ -44,12 +44,16 @@
  *
  */
 #include <chrono>
+#include <exception>
 #include <functional>
 #include <memory>
 #include <string>
+#include <signal.h>
 
 #include "rclcpp/rclcpp.hpp"
+#include <rclcpp/logging.hpp>
 #include "std_msgs/msg/string.hpp"
+#include "beginner_tutorials/srv/change_string.hpp"    
 
 using namespace std::chrono_literals;
 
@@ -63,34 +67,42 @@ class MinimalPublisher : public rclcpp::Node {
     publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
     timer_ = this->create_wall_timer(
         500ms, std::bind(&MinimalPublisher::timer_callback, this));
-  
+    
+    auto serviceCallbackPtr = std::bind (&MinimalPublisher::changeRequestString, this, std::placeholders::_1, std::placeholders::_2);
+    service_ = create_service <beginner_tutorials::srv::ChangeString> ("update_request",serviceCallbackPtr);
 
   }
 
  private:
   void timer_callback() {
     auto message = std_msgs::msg::String();
-    message.data = "Robot says Hi! My count is " + std::to_string(count_++);
-    RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
+    message.data = defaultMessage + std::to_string(count_++);
+    RCLCPP_INFO_STREAM(this->get_logger(), "Publishing:" << message.data);
     publisher_->publish(message);
   }
-
-
-  void changeRequestString(const std::shared_ptr<beginner_tutorials::srv::changeString::Request> request,     
-            std::shared_ptr<beginner_tutorials::srv::changeString::Response>       response) 
+  
+  void changeRequestString(const std::shared_ptr<beginner_tutorials::srv::ChangeString::Request>request,     
+            std::shared_ptr<beginner_tutorials::srv::ChangeString::Response>response) 
   {      
-    response->output = defaultMessage;
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Incoming request\n Input: %ld",  
-                      request->input);                                  
-    RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Response updated: [%ld]", (long int)response->output);
+    response->output = request->input;
+    RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "Input Request: " << request->input);                                  
+    RCLCPP_WARN_STREAM(rclcpp::get_logger("rclcpp"), "Response updated: " << response->output);
+    defaultMessage = response->output; //changes default message to what was requested
   }
 
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
+  rclcpp::Service<beginner_tutorials::srv::ChangeString>::SharedPtr service_;
   size_t count_;
   
 };
 
+void terminate_handler(int stop) {
+    if (stop == 1) {
+        RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"),
+                        "Process terminated by user!");
+    }
+}
 int main(int argc, char* argv[]) {
 
    /**
@@ -103,6 +115,7 @@ int main(int argc, char* argv[]) {
    * You must call one of the versions of rclcpp::init() before using any other
    * part of the ROS2 system.
    */
+  signal(SIGINT, terminate_handler);
   rclcpp::init(argc, argv);
   rclcpp::spin(std::make_shared<MinimalPublisher>());
   rclcpp::shutdown();
