@@ -50,12 +50,14 @@
 #include <exception>
 #include <functional>
 #include <memory>
+
 #include <rclcpp/logging.hpp>
 #include <string>
-
 #include "beginner_tutorials/srv/change_string.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
+#include "geometry_msgs/msg/transform_stamped.hpp"
+#include "tf2_ros/transform_broadcaster.h"
 
 using namespace std::chrono_literals;
 
@@ -74,36 +76,53 @@ class MinimalPublisher : public rclcpp::Node {
                                                         // message
   MinimalPublisher() : Node("minimal_publisher"), count_(0) {
   
-  // Setting up parameter for publisher frequency 
-  auto freq_d = rcl_interfaces::msg::ParameterDescriptor();
-  freq_d.description = "Sets Publisher frequency in Hz.";
-  this->declare_parameter("frequency", 3.0, freq_d);
-  auto frequency =
-      this->get_parameter("frequency").get_parameter_value().get<std::float_t>();
+    // Setting up parameter for publisher frequency 
+    auto freq_d = rcl_interfaces::msg::ParameterDescriptor();
+    freq_d.description = "Sets Publisher frequency in Hz.";
+    this->declare_parameter("frequency", 3.0, freq_d);
+    auto frequency =
+        this->get_parameter("frequency").get_parameter_value().get<std::float_t>();
 
     publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
-
-    timer_ = this->create_wall_timer(
-        500ms, std::bind(&MinimalPublisher::timer_callback, this));
-
     auto serviceCallbackPtr =
         std::bind(&MinimalPublisher::changeRequestString, this,
                   std::placeholders::_1, std::placeholders::_2);
     service_ = create_service<beginner_tutorials::srv::ChangeString>(
         "update_request", serviceCallbackPtr);
    
-   if (this->count_subscribers("topic") == 0) {
-    RCLCPP_WARN_STREAM(this->get_logger(), "No subscriber for this topic");
-  }
-  this->get_logger().set_level(rclcpp::Logger::Level::Debug);
+    if (this->count_subscribers("topic") == 0) {
+      RCLCPP_WARN_STREAM(this->get_logger(), "No subscriber for this topic");
+    }
+    this->get_logger().set_level(rclcpp::Logger::Level::Debug);
+
+    // creates a broadcaster
+    tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
+    timer_ = this->create_wall_timer(
+          500ms, std::bind(&MinimalPublisher::broadcast_timer_callback, this));
+
   }
 
  private:
-  void timer_callback() {
+  void broadcast_timer_callback() {
     auto message = std_msgs::msg::String();
     message.data = defaultMessage + std::to_string(count_++);
     RCLCPP_INFO_STREAM(this->get_logger(), "Publishing:" << message.data);
     publisher_->publish(message);
+
+    geometry_msgs::msg::TransformStamped t;
+
+    t.header.stamp = this->get_clock()->now();
+    t.header.frame_id = "world";
+    t.child_frame_id = "talk";
+    t.transform.translation.x = 0.0;
+    t.transform.translation.y = 2.0;
+    t.transform.translation.z = 0.0;
+    t.transform.rotation.x = 0.0;
+    t.transform.rotation.y = 0.0;
+    t.transform.rotation.z = 0.0;
+    t.transform.rotation.w = 1.0;
+
+    tf_broadcaster_->sendTransform(t);
   }
 
   void changeRequestString(
@@ -124,6 +143,7 @@ class MinimalPublisher : public rclcpp::Node {
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
   rclcpp::Service<beginner_tutorials::srv::ChangeString>::SharedPtr service_;
   size_t count_;
+  std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 };
 
 void terminate_handler(int signum) {
