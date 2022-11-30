@@ -5,6 +5,12 @@ launch:
 - arg:
     name: "frequency"
     default: "1.0"
+- arg:
+    name: "record_rosbag2"
+    default: "false"
+- arg:
+name: "name_rosbag2"
+default: "chatter"
 
 # start a talker node 
 - node:
@@ -23,4 +29,11 @@ launch:
     exec: "listener"
     name: "sim"
     namespace: "minimal_subscriber"
+
+# start rosbag recording
+- node:
+    pkg: "rosbag2"
+    exec: " "
+    name: "rosbag2_node"
+    namespace: "minimal_publisher"
   

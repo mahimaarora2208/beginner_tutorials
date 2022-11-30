@@ -2,7 +2,7 @@
 /********************************************************************
  * Apache License 2.0
  * Copyright (c) 2022 Mahima Arora
- * 
+ *
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
   if (rclcpp::spin_until_future_complete(node, result) ==
       rclcpp::FutureReturnCode::SUCCESS) {
     RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp"),
-                       "Output String:" << result.get()->output);
+                        "Output String:" << result.get()->output);
   } else {
     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),
                  "Failed to call service string_change");
