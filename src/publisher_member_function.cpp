@@ -114,12 +114,12 @@ class MinimalPublisher : public rclcpp::Node {
     t.header.stamp = this->get_clock()->now();
     t.header.frame_id = "world";
     t.child_frame_id = "talk";
-    t.transform.translation.x = 0.0;
+    t.transform.translation.x = 5.0;
     t.transform.translation.y = 2.0;
-    t.transform.translation.z = 0.0;
-    t.transform.rotation.x = 0.0;
-    t.transform.rotation.y = 0.0;
-    t.transform.rotation.z = 0.0;
+    t.transform.translation.z = 1.0;
+    t.transform.rotation.x = 2.0;
+    t.transform.rotation.y = 1.0;
+    t.transform.rotation.z = 3.0;
     t.transform.rotation.w = 1.0;
 
     tf_broadcaster_->sendTransform(t);

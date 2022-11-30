@@ -67,6 +67,15 @@ To check whether the value updated to 5.0,open a new terminal and source it. Run
 ros2 param list
 ros2 param get /minimal_publisher/sim frequency 
 ```
+### tf2 Frames
+To create pdf file of frames:
+```
+ros2 run tf2_tools view_frames
+```
+To check transformation between two frames (world and talk frames), run the publisher(talker) file and open a new terminal to run:
+```
+ros2 run tf2_ros tf2_echo world talk
+```
 
 ## Results
 The results after running the following commands are stored in the <your_package>/results folder.
