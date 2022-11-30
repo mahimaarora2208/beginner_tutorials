@@ -31,9 +31,7 @@ default: "chatter"
     namespace: "minimal_subscriber"
 
 # start rosbag recording
-- node:
-    pkg: "rosbag2"
-    exec: " "
-    name: "rosbag2_node"
-    namespace: "minimal_publisher"
+- executable:
+  cmd: "ros2 bag record -a --output ../results/$(var name_rosbag2)"
+  if:$(var record_rosbag2)
   
