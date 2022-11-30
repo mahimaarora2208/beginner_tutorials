@@ -13,10 +13,10 @@ This is a ROS Package that defines the following:
 
 ### Dependencies/ Assumptions
 - OS : Ubuntu 20.04 
-- ROS2 Distro : ROS2 Humble
+- ROS2 Distro : ROS2 Galactic
 - Package build type : ```ament_cmake ```
 - Package dependencies : ```rclcpp```, ```std_msgs``` 
-- ROS2 Humble Installation : [link](http://docs.ros.org/en/humble/Installation/Alternatives/Ubuntu-Development-Setup.html)
+- ROS2 Galactic Installation : [link](https://docs.ros.org/en/galactic/Installation/Ubuntu-Install-Debians.html)
 
 ## How to Run the ROS Package
 ### Build Instructions
@@ -24,10 +24,10 @@ This is a ROS Package that defines the following:
 cd <your_ROS2_ws>/src
 git clone https://github.com/mahimaarora2208/beginner_tutorials.git
 cd ..   
-rosdep install -i --from-path src --rosdistro humble -y
+rosdep install -i --from-path src --rosdistro galactic -y
 colcon build --packages-select beginner_tutorials
 source . install/setup.bash
-source ~/<your ROS2 installation>/install/local_setup.bash
+source ~/<your ROS2 installation>/opt/ros/galactic/setup.bash
 ```
 
 ### Run Publisher
