@@ -48,7 +48,13 @@
 #include <gtest/gtest.h>
 #include <stdlib.h>
 #include "std_msgs/msg/string.hpp"
+#include <iostream>
 
+#include <chrono>
+#include <cstdlib>
+#include <memory>
+
+using namespace std::chrono_literals;
 /**
  * @brief Test case to check the existence of the message_srv service
  * @param none
@@ -56,19 +62,21 @@
  */
 
 namespace beginner_tutorials {
-class TestingTalker : public testing::Test {
+class TestingTalker : public testing::Test, public rclcpp::Node {
  public:
   TestingTalker()
-      : node_(std::make_shared<rclcpp::Node>("basic_test")) {
-    RCLCPP_ERROR_STREAM(node_->get_logger(), "DONE WITH CONSTRUCTOR!!");
+      : Node("basic_test") {
+    RCLCPP_ERROR_STREAM(this->get_logger(), "DONE WITH CONSTRUCTOR!!");
   }
 
-  void SetUp() override {
+  static void SetUpTestCase() {
     // Setup things that should occur before every test instance should go here
-    RCLCPP_ERROR_STREAM(node_->get_logger(), "DONE WITH SETUP!!");
+    rclcpp::init(0, nullptr);
+    // RCLCPP_ERROR_STREAM(this->get_logger(), "DONE WITH SETUP!!");   // commented because the current instance is not available for static member functions
   }
 
-  void TearDown() override {
+  static void TearDownTestCase(){
+    rclcpp::shutdown();
     std::cout << "DONE WITH TEARDOWN" << std::endl;
   }
 
@@ -77,11 +85,16 @@ class TestingTalker : public testing::Test {
 };
 
 TEST_F(TestingTalker, test_pubcount) {
-  node_ = rclcpp::Node::make_shared("test_publisher");
-  auto test_pub = node_->create_publisher<std_msgs::msg::String>
+  // node_ = rclcpp::Node::make_shared("test_publisher");
+  auto test_pub = this->create_publisher<std_msgs::msg::String>
                     ("chatter", 10.0);
 
-  auto num_pub = node_->count_publishers("chatter");
-  EXPECT_EQ(1, static_cast<int>(num_pub));
+  auto num_pub = this->count_publishers("chatter");
+
+  RCLCPP_DEBUG_STREAM(rclcpp::get_logger("rclcpp"),
+                        "Output String:" << static_cast<int>(num_pub));
+
+  ASSERT_EQ(1, static_cast<int>(num_pub));
+
 }
 }  // namespace beginner_tutorials
