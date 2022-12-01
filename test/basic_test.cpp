@@ -43,11 +43,12 @@
  * 
  */
 
-#include <gtest/gtest.h>
+// #include <gtest/gtest.h>
 #include <rclcpp/rclcpp.hpp>
 #include <gtest/gtest.h>
 #include <stdlib.h>
-// #include "beginner_tutorials/srv/change_string.hpp"
+#include "std_msgs/msg/string.hpp"
+
 /**
  * @brief Test case to check the existence of the message_srv service
  * @param none
@@ -58,8 +59,7 @@ namespace beginner_tutorials {
 class TestingTalker : public testing::Test {
  public:
   TestingTalker()
-      : node_(std::make_shared<rclcpp::Node>("basic_test"))
-  {
+      : node_(std::make_shared<rclcpp::Node>("basic_test")) {
     RCLCPP_ERROR_STREAM(node_->get_logger(), "DONE WITH CONSTRUCTOR!!");
   }
 
@@ -76,33 +76,12 @@ class TestingTalker : public testing::Test {
   rclcpp::Node::SharedPtr node_;
 };
 
-TEST_F(TestingTalker, TrueIsTrueTest) {
-  std::cout << "TEST BEGINNING!!" << std::endl;
-  EXPECT_TRUE(true);
+TEST_F(TestingTalker, test_pubcount) {
+  node_ = rclcpp::Node::make_shared("test_publisher");
+  auto test_pub = node_->create_publisher<std_msgs::msg::String>
+                    ("chatter", 10.0);
+
+  auto num_pub = node_->count_publishers("chatter");
+  EXPECT_EQ(1, static_cast<int>(num_pub));
 }
-// /**
-//  * @brief Test case to check the succesful call of the message_srv service
-//  * @param none
-//  * @return none
-//  */
-// TEST(TestingTalker, testROSService) {
-//   auto serviceCallbackPtr =
-//   rclcpp::Service<beginner_tutorials::srv::ChangeString>::SharedPtr service_;
-//         std::bind(&MinimalPublisher::changeRequestString, this,
-//                   std::placeholders::_1, std::placeholders::_2);
-//   service_ = create_service<beginner_tutorials::srv::ChangeString>(
-//         "update_request", serviceCallbackPtr);
-  
-//   const std::shared_ptr<beginner_tutorials::srv::ChangeString::Request>
-//           request,
-//       std::shared_ptr<beginner_tutorials::srv::ChangeString::Response>
-//           response) {
-//     response->output = request->input;
-//     defaultMessage =
-//         response->output;  // changes default message to what was requested
-//   }
-//   request.input = "Hello Terps!!";
-//   std::string expectedString = request.input;
-//   EXPECT_EQ(expectedString, request.input);
-// }
-}
+}  // namespace beginner_tutorials
