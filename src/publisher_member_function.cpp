@@ -61,9 +61,6 @@
 
 using namespace std::chrono_literals;
 
-/* This example creates a subclass of Node and uses std::bind() to register a
- * member function as a callback from the timer. */
-
 /**
  * @brief Minimal Publisher Class
  *
@@ -82,7 +79,11 @@ class MinimalPublisher : public rclcpp::Node {
     auto frequency = this->get_parameter("frequency")
                          .get_parameter_value()
                          .get<std::float_t>();
+    
+    // create a Publisher called chatter
     publisher_ = this->create_publisher<std_msgs::msg::String>("chatter", 10);
+    
+    // create a Service Callback
     auto serviceCallbackPtr =
         std::bind(&MinimalPublisher::changeRequestString, this,
                   std::placeholders::_1, std::placeholders::_2);
@@ -101,12 +102,17 @@ class MinimalPublisher : public rclcpp::Node {
   }
 
  private:
+  /**
+   * @brief broadcast timer callback
+   *
+   */
   void broadcast_timer_callback() {
     auto message = std_msgs::msg::String();
     message.data = defaultMessage + std::to_string(count_++);
     RCLCPP_INFO_STREAM(this->get_logger(), "Publishing:" << message.data);
     publisher_->publish(message);
-
+    
+    // Sets Tf values 
     geometry_msgs::msg::TransformStamped t;
 
     t.header.stamp = this->get_clock()->now();
@@ -122,7 +128,11 @@ class MinimalPublisher : public rclcpp::Node {
 
     tf_broadcaster_->sendTransform(t);
   }
-
+ 
+  /**
+   * @brief changes default string to custom string passed
+   *
+   */
   void changeRequestString(
       const std::shared_ptr<beginner_tutorials::srv::ChangeString::Request>
           request,
@@ -144,12 +154,18 @@ class MinimalPublisher : public rclcpp::Node {
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 };
 
+/**
+ * @brief called when user terminates program
+ *
+ */
 void terminate_handler(int signum) {
   if (signum == 2) {
     RCLCPP_FATAL_STREAM(rclcpp::get_logger("rclcpp"),
                         "Process terminated by user!");
   }
 }
+
+
 int main(int argc, char* argv[]) {
   /**
    * The rclcpp::init() function needs to see argc and argv so that it can

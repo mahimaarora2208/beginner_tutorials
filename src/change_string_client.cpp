@@ -53,12 +53,14 @@ using namespace std::chrono_literals;
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
 
+  // create a client node
   std::shared_ptr<rclcpp::Node> node =
       rclcpp::Node::make_shared("string_change_client");
   rclcpp::Client<beginner_tutorials::srv::ChangeString>::SharedPtr client =
       node->create_client<beginner_tutorials::srv::ChangeString>(
           "string_change");
-
+    
+  // create a Request for Service
   auto request =
       std::make_shared<beginner_tutorials::srv::ChangeString::Request>();
   request->input = argv[1];

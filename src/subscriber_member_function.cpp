@@ -55,6 +55,10 @@
 
 using std::placeholders::_1;
 
+/**
+ * @brief Minimal Subscriber Class
+ *
+ */
 class MinimalSubscriber : public rclcpp::Node {
  public:
   MinimalSubscriber() : Node("minimal_subscriber") {
