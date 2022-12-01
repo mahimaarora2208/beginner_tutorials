@@ -76,7 +76,21 @@ To check transformation between two frames (world and talk frames), run the publ
 ```
 ros2 run tf2_ros tf2_echo world talk
 ```
+### ROS2 Bags
+To record rosbags in a custom folder:
+```
+ros2 bag record -o rosbag_files /chatter
+```
+To check topic information that is in the rosbag:
+```
+ros2 bag info rosbag_files
+```
+Lastly, to play back the data from rosbags:
+```
+ros2 bag play rosbag_files
+```
 
+The results for the listener displaying output based on rosbags is in the result folder. Please note, it works independent of publisher node.
 ## Results
 The results after running the following commands are stored in the <your_package>/results folder.
 
