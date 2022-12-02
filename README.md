@@ -91,6 +91,17 @@ ros2 bag play rosbag_files
 ```
 
 The results for the listener displaying output based on rosbags is in the result folder. Please note, it works independent of publisher node.
+
+### ROS2 Run TESTS
+Run the following commands to test your test cases:
+```
+colcon build --packages-select beginner_tutorials
+source install/setup.bash
+colcon test beginner_tutorials
+colcon test --event-handlers console_direct+ --packages-select beginner_tutorials 
+colcon test-result --test-result-base build/beginner_tutorials
+echo $?
+```
 ## Results
 The results after running the following commands are stored in the <your_package>/results folder.
 
